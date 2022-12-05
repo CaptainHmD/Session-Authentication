@@ -19,7 +19,9 @@
   },
   "homepage": "https://github.com/CaptainHmD/Session-Authentication#readme",
   "dependencies": {
+    "connect-mongodb-session": "^3.1.1",
     "dotenv": "^16.0.3",
+    "ejs": "^3.1.8",
     "env": "^0.0.2",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
