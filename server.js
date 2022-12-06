@@ -1,6 +1,6 @@
 require('dotenv').config()
 const path = require('path')
-
+const bcrypt = require('bcrypt');
 //express imports
 const express = require('express');
 const app = express();
@@ -57,20 +57,41 @@ app.get('/register',(req,res)=>{
 //! in post request we can store authentication process
 app.post('/register', async (req,res)=>{
     const {username,email,password} = req.body; // taking a register values from the body
-    let user = await Users.findOne({username}).exec() // find the duplicates  values
-    if(user){
-        res.send('duplicates')
-    }else{
-        const result = await Users.create({
-            "username":username,
-            "password":password,
-            "email":email,
-        })
-        res.send(result)
-
+    let userName = await Users.findOne({username}).exec() // find the duplicates  values
+    let userEmailDup = await Users.findOne({email}).exec() // find the duplicates  values
+    if(userName||userEmailDup){
+        // res.send('duplicates')
+        return res.redirect('/register') // or maybe another register page with alert page 
     }
 
+    // if the unique values are unique create new user and store it in DB
+    //TODO: hashing the password via bcrypt https://www.npmjs.com/package/bcrypt
+    const hashPassword = await bcrypt.hash(password,10) // hashing the password
+    userName = new Users({
+        username,
+        email,
+        password: hashPassword
+    })
+        // const result = await Users.create(user)
+        userName.save();
+        //  res.send(user);
+         res.redirect('/login');
+    
+
 })
+
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body; // taking a form values from the body
+    const user = await Users.findOne({ email }).exec()
+    if (!user) {
+    return res.redirect('/login')
+    }
+
+    const passwordMath = await bcrypt.compare(password,user.password)
+    console.log(passwordMath);
+    console.log('password,user.password',password,"   ",user.password);
+})
+
 
 mongoose.connection.once('open' , () =>{ // try to connect to DB before listing to the request
     console.log('Connected to MongoDB');
