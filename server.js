@@ -8,7 +8,6 @@ const cookieParser = require('cookie-parser');
 //files imports
 
 const isAuth = require('./middleware/isAuth')
-const isIdsMatch = require('./middleware/idsMatch')
 
 //express imports
 const express = require('express');
@@ -45,28 +44,27 @@ const store = new MongoDBSession({ // create collections in mongodb and name it 
 })
 
 //middleware for session 
-const oneDay = 1000 * 60 * 60 * 24; // one day
+const oneDay = 1000 * 10; // one day
 app.use(session({ 
     secret: process.env.SECRET, //* docs line 3
     resave: false,//* docs line 10
     saveUninitialized: true,//* docs line 18
     cookie: { maxAge: oneDay },//* docs line 23
     store: store
-
 })) // these stands for all req.session
 
 
-app.get('/', isIdsMatch, async (req, res) => { // root
+app.get('/', async (req, res) => { // root
     res.send(req.session.id + " \n" + req.cookies["connect.sid"]);
 })
-app.get('/login', (req, res) => {
-    res.render(path.join('login.ejs'))
-})
+
+
 app.get('/register', (req, res) => {
     res.render(path.join('register.ejs'))
 })
 app.get('/secret', isAuth, (req, res) => {
-    res.render(path.join('secret.ejs'))
+    console.log(req.session);
+    res.render(path.join('secret.ejs'),{user:{name:req.session.userName}})
 })
 
 //! in post request we can store authentication process
@@ -96,24 +94,6 @@ app.post('/register', async (req, res) => {
 
 })
 
-app.post('/login', async (req, res) => {
-    const { email, password } = req.body; // taking a form values from the body
-    const user = await Users.findOne({ email }).exec()
-    if (!user) {
-        return res.redirect('/login')
-    }
-
-    const passwordMath = await bcrypt.compare(password, user.password)
-    if (!passwordMath) {
-        return res.redirect('/login')
-    }
-
-    console.log(passwordMath);
-    console.log('password,user.password', password, "   ", user.password);
-    req.session.isAuth = true;
-    res.redirect('/secret')
-
-})
 app.post('/logout', (req, res) => {
     // res.redirect('/register')
     req.session.destroy((err) => {
@@ -123,6 +103,10 @@ app.post('/logout', (req, res) => {
 
 
 })
+
+//routes
+
+app.use('/login',require('./routes/login'))
 
 
 mongoose.connection.once('open', () => { // try to connect to DB before listing to the request
