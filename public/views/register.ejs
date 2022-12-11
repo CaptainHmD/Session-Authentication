@@ -40,7 +40,7 @@
       <form action="/register" method="POST">
         <div class="input-group">
           <label for="username">Username:</label>
-          <input type="text" name="username" required/>
+          <input type="text" name="username" id="username" required/>
         </div>
         <div class="input-group">
           <label for="email">Email:</label>
@@ -52,7 +52,10 @@
         </div>
         <button>Register</button>
       </form>
+      <button onclick="isDup()">find duplicate</button>
       <a href="/login">Login</a>
     </div>
+
+    <script src="../js/script.js"></script>
   </body>
 </html>

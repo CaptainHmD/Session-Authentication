@@ -4,7 +4,7 @@ const path = require('path')
 const root = path.join(__dirname, '..')
 const loginControllers = require('../controllers/loginControllers')
 router.get('/',(req,res)=>{
-    res.render(path.join('login.ejs'),{root:root})
+    res.render(path.join(__dirname,'..','public','views','login.ejs'),{root:root})
 })
 
 

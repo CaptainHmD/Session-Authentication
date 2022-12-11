@@ -1,6 +1,7 @@
 require('dotenv').config()
-
 const path = require('path')
+const root = path.join(__dirname, '..')
+
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
 
@@ -36,6 +37,9 @@ app.use(express.json());
 //middleware for cookies
 app.use(cookieParser());
 
+// !important 
+app.use(express.static('public'));
+
 connectDB(); // connect to the db
 
 const store = new MongoDBSession({ // create collections in mongodb and name it mySessions
@@ -60,11 +64,20 @@ app.get('/', async (req, res) => { // root
 
 
 app.get('/register', (req, res) => {
-    res.render(path.join('register.ejs'))
+    res.render(path.join(__dirname,'public','views','register.ejs'))
 })
 app.get('/secret', isAuth, (req, res) => {
     console.log(req.session);
-    res.render(path.join('secret.ejs'),{user:{name:req.session.userName}})
+    res.render(path.join(__dirname,'public','views','secret.ejs'),{user:{name:req.session.userName}})
+})
+
+//TODO:  ajax request 
+
+app.get('/find-dup',async(req,res)=>{
+    // console.log(req.query.userName);
+    usrname = req.query.userName;
+   const dup = await Users.findOne({username: usrname}).exec()
+    res.send(dup);
 })
 
 //! in post request we can store authentication process
@@ -81,8 +94,8 @@ app.post('/register', async (req, res) => {
     //TODO: hashing the password via bcrypt https://www.npmjs.com/package/bcrypt
     const hashPassword = await bcrypt.hash(password, 10) // hashing the password
     userName = new Users({
-        username,
-        email,
+        username,// mean username:username
+        email, // mean email:email
         password: hashPassword
     })
     // const result = await Users.create(user)
